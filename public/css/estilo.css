@@ -1,0 +1,44 @@
+body { font-family: sans-serif; background: #1c1c24; color: #eee; margin: 0; padding: 16px; }
+.caixa { max-width: 520px; margin: 0 auto; }
+input, button { width: 100%; padding: 14px; margin: 6px 0; font-size: 16px; border-radius: 8px; border: none; box-sizing: border-box; }
+input { background: #2e2e3a; color: #eee; }
+button { background: #7c5cff; color: #fff; font-weight: bold; }
+button.sec { background: #3a3a4a; }
+button.mini { width: auto; padding: 8px 12px; margin: 0 0 0 6px; font-size: 14px; }
+.erro { color: #ff6b6b; min-height: 1em; }
+.tela { display: none; }
+.topo { display: flex; justify-content: space-between; align-items: center; }
+.topo button { width: auto; padding: 8px 14px; margin: 0; font-size: 14px; }
+#codigo { font-size: 28px; letter-spacing: 6px; color: #ffd166; }
+#lista { font-size: 14px; color: #bbb; margin: 4px 0 10px; }
+details { background: #24242e; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+summary { padding: 6px 0; font-weight: bold; }
+.mapa-item { display: flex; align-items: center; margin: 8px 0; }
+.mapa-item img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; margin-right: 10px; }
+.mapa-item .nome { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#mesa { position: relative; width: 100%; min-height: 260px; background: #2e2e3a; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+#mapa { width: 100%; display: none; user-select: none; -webkit-user-drag: none; }
+#aviso { position: absolute; top: 50%; left: 0; right: 0; text-align: center; color: #888; }
+.token { position: absolute; width: 14%; max-width: 64px; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: #fff; border: 3px solid #fff; box-sizing: border-box; touch-action: none; user-select: none; }
+.token span { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 2px; font-size: 11px; font-weight: normal; white-space: nowrap; background: rgba(0,0,0,0.7); padding: 1px 6px; border-radius: 6px; }
+select { width: 100%; padding: 14px; margin: 6px 0; font-size: 16px; border-radius: 8px; border: none; box-sizing: border-box; background: #2e2e3a; color: #eee; }
+input[type=color] { height: 48px; padding: 4px; }
+.linha { display: flex; gap: 8px; }
+.linha button { flex: 1; }
+#painel-token { background: #24242e; border-radius: 8px; padding: 8px 12px; margin-top: 10px; }
+.bolinha { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; color: #fff; border: 2px solid #fff; box-sizing: border-box; flex-shrink: 0; }
+.token .giro { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+.token .seta { position: absolute; top: -11px; left: 50%; margin-left: -6px; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 11px solid #ffd166; }
+.token.meu { border-color: #ffd166; }
+.token.sel { box-shadow: 0 0 0 4px #ffd166, 0 0 14px #ffd166; }
+.ok { color: #7ee787; min-height: 1em; }
+.quem { display: flex; align-items: center; gap: 10px; }
+.quem h2 { margin: 0; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; background: #3a3a4a center / cover no-repeat; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+.avatar.grande { width: 110px; height: 110px; font-size: 44px; margin: 10px auto; }
+.avatar.mini-av { width: 26px; height: 26px; font-size: 13px; }
+#lista { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: flex; align-items: center; gap: 6px; background: #24242e; border-radius: 20px; padding: 3px 12px 3px 3px; font-size: 14px; }
+.barra { display: flex; align-items: center; gap: 4px; }
+.barra b { flex: 1; }
+#painel-token { position: sticky; bottom: 8px; z-index: 5; box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.6); }

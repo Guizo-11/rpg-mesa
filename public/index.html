@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mesa de RPG</title>
+<link rel="stylesheet" href="/css/estilo.css">
+</head>
+<body>
+<div class="caixa">
+
+<p id="carregando">Conectando...</p>
+
+<div id="tela-login" class="tela">
+  <h2>Mesa de RPG</h2>
+  <input id="login-nome" placeholder="Nome de usuário" maxlength="16" autocomplete="username">
+  <input id="login-senha" type="password" placeholder="Senha" autocomplete="current-password">
+  <button onclick="fazerLogin()">Entrar</button>
+  <button class="sec" onclick="criarConta()">Criar conta</button>
+  <p class="erro" id="erro-login"></p>
+</div>
+
+<div id="tela-lobby" class="tela">
+  <div class="topo">
+    <div class="quem">
+      <div id="meu-avatar" class="avatar"></div>
+      <h2>Olá, <span id="meu-nome"></span></h2>
+    </div>
+    <button class="sec" onclick="sair()">Sair</button>
+  </div>
+  <button class="sec" onclick="abrirPerfil()">Meu perfil</button>
+  <button onclick="criarSala()">Criar sala (mestre)</button>
+  <input id="cod" placeholder="Código da sala" maxlength="4">
+  <button onclick="entrarSala()">Entrar na sala</button>
+  <p class="erro" id="erro-lobby"></p>
+</div>
+
+<div id="tela-perfil" class="tela">
+  <div class="topo">
+    <h2>Meu perfil</h2>
+    <button class="sec" onclick="mostrar('tela-lobby')">Voltar</button>
+  </div>
+  <div id="perfil-foto" class="avatar grande"></div>
+  <input id="perfil-arquivo" type="file" accept="image/*" onchange="enviarFoto()">
+  <button class="sec" onclick="removerFoto()">Remover foto</button>
+  <p>Usuário de login: <b id="perfil-login"></b></p>
+  <input id="perfil-nome" placeholder="Nome na mesa" maxlength="16">
+  <button onclick="salvarNome()">Salvar nome</button>
+  <h3>Trocar senha</h3>
+  <input id="senha-atual" type="password" placeholder="Senha atual" autocomplete="current-password">
+  <input id="senha-nova" type="password" placeholder="Nova senha" autocomplete="new-password">
+  <button onclick="trocarSenha()">Trocar senha</button>
+  <p class="erro" id="erro-perfil"></p>
+  <p class="ok" id="ok-perfil"></p>
+</div>
+
+<div id="tela-sala" class="tela">
+  <div class="topo">
+    <div>Sala: <span id="codigo"></span> · <span id="papel"></span></div>
+    <button class="sec" onclick="sairDaSala()">Sair da sala</button>
+  </div>
+  <div id="lista"></div>
+
+  <div id="painel" style="display:none">
+    <details>
+      <summary>Meus mapas</summary>
+      <input id="mapa-nome" placeholder="Nome do mapa (ex: Taverna)" maxlength="40">
+      <input id="mapa-arquivo" type="file" accept="image/*">
+      <button onclick="enviarMapa()">Salvar na biblioteca</button>
+      <p class="erro" id="erro-mapa"></p>
+      <div id="biblioteca"></div>
+    </details>
+    <details>
+      <summary>Meus tokens</summary>
+      <input id="nomeToken" placeholder="Nome do token (ex: Goblin)" maxlength="12">
+      <input id="cor-token" type="color" value="#7c5cff">
+      <input id="imagem-token" type="file" accept="image/*">
+      <button onclick="criarToken()">Criar token e colocar na mesa</button>
+      <p class="erro" id="erro-token"></p>
+      <div id="tokens-salvos"></div>
+    </details>
+  </div>
+
+  <div id="mesa">
+    <div id="aviso">Aguardando o mestre escolher o mapa</div>
+    <img id="mapa">
+  </div>
+
+  <div id="painel-token" style="display:none">
+    <div class="barra">
+      <b id="sel-nome"></b>
+      <button class="mini sec" onclick="girar(-45)">↺</button>
+      <button class="mini sec" onclick="girar(45)">↻</button>
+    </div>
+    <div id="sel-mestre" style="display:none">
+      <small>Quem controla:</small>
+      <select id="sel-dono" onchange="atribuirDono()"></select>
+      <button class="sec" onclick="tirarDaMesa()">Tirar da mesa</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/comum.js"></script>
+<script src="/js/upload.js"></script>
+<script src="/js/conta.js"></script>
+<script src="/js/salas.js"></script>
+<script src="/js/mapas.js"></script>
+<script src="/js/tokens.js"></script>
+<script src="/js/mesa.js"></script>
+<script src="/js/inicio.js"></script>
+</body>
+</html>
