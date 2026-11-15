@@ -15,6 +15,7 @@ function atualizarMoldura() {
     });
   }
   moldura.appendChild(criarAlcaGiro(selecionado));
+  moldura.appendChild(criarAlcaFicha(selecionado));
   el.appendChild(moldura);
 }
 

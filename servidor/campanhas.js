@@ -15,15 +15,20 @@ function gerarCodigo() {
 }
 
 function resumo(c, chave) {
-  const mestre = db.usuarios[c.mestre];
   const sala = salas.lista[c.codigo];
+  const mapa = c.mapaId && db.mapas[c.mapaId] ? db.mapas[c.mapaId] : null;
+  const participantes = [c.mestre].concat(c.membros)
+    .filter((k) => db.usuarios[k])
+    .map((k) => ({ nome: db.usuarios[k].nome, foto: db.usuarios[k].foto || null }));
   return {
     id: c.id,
     nome: c.nome,
     codigo: c.mestre === chave ? c.codigo : null,
     souMestre: c.mestre === chave,
-    mestreNome: mestre ? mestre.nome : '?',
-    jogadores: c.membros.length,
+    mestreNome: db.usuarios[c.mestre] ? db.usuarios[c.mestre].nome : '?',
+    participantes,
+    capa: mapa ? '/mapas/' + mapa.arquivo : null,
+    ultimoAcesso: c.ultimoAcesso || null,
     aoVivo: !!sala && Object.keys(sala.jogadores).length > 0
   };
 }
@@ -31,7 +36,7 @@ function resumo(c, chave) {
 function minhas(chave) {
   return Object.values(db.campanhas)
     .filter((c) => c.mestre === chave || c.membros.includes(chave))
-    .sort((a, b) => b.criadoEm - a.criadoEm)
+    .sort((a, b) => (b.ultimoAcesso || b.criadoEm) - (a.ultimoAcesso || a.criadoEm))
     .map((c) => resumo(c, chave));
 }
 

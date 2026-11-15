@@ -12,6 +12,7 @@ const mapas = require('./servidor/mapas');
 const imagens = require('./servidor/imagens');
 const tokens = require('./servidor/tokens');
 const setas = require('./servidor/setas');
+const fichas = require('./servidor/fichas');
 
 const app = express();
 const server = http.createServer(app);
@@ -30,6 +31,7 @@ io.on('connection', (socket) => {
   mapas.ligar(ctx);
   tokens.ligar(ctx);
   setas.ligar(ctx);
+  fichas.ligar(ctx);
 });
 
 const PORTA = process.env.PORT || 3000;

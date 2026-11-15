@@ -1,0 +1,52 @@
+/* base: cores, tipografia, campos, botões, cartões e avatares */
+
+:root { --fundo: #14131c; --cartao: #24223a; --borda: #38355a; --texto: #ece9f6; --mudo: #9d98b8; --ouro: #ffd166; --roxo: #7c5cff; }
+
+body { margin: 0; padding: 16px; overflow-x: hidden; font-family: sans-serif; color: var(--texto); background: radial-gradient(1000px 520px at 50% -10%, #2d2756 0%, var(--fundo) 65%) fixed; }
+h1, h2, h3 { font-family: 'Cinzel', Georgia, serif; letter-spacing: 0.5px; }
+.caixa { max-width: 520px; margin: 0 auto; }
+.tela { display: none; }
+
+/* campos */
+input, select, button { width: 100%; padding: 14px; margin: 6px 0; font-size: 16px; border-radius: 8px; box-sizing: border-box; }
+input, select { color: var(--texto); background: #1a1930; border: 1px solid var(--borda); }
+input:focus, select:focus { outline: none; border-color: var(--roxo); box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.25); }
+input[type=color] { height: 48px; padding: 4px; }
+input[type=checkbox] { width: auto; margin: 0 8px 0 0; }
+input.codigo { text-align: center; letter-spacing: 10px; font-size: 24px; font-weight: bold; text-transform: uppercase; }
+
+/* botões */
+button { border: none; font-weight: bold; color: #fff; background: linear-gradient(135deg, #8f70ff, #6a4df0); box-shadow: 0 4px 14px rgba(106, 77, 240, 0.35); }
+button:active { transform: scale(0.98); }
+button.sec { background: var(--cartao); border: 1px solid var(--borda); box-shadow: none; }
+button.mini { width: auto; margin: 0 0 0 6px; padding: 8px 12px; font-size: 14px; }
+
+/* textos de apoio */
+.mudo { margin: 4px 0 10px; font-size: 14px; color: var(--mudo); }
+.erro { min-height: 1em; color: #ff6b6b; }
+.ok { min-height: 1em; color: #7ee787; }
+
+/* pedaços de layout */
+.linha { display: flex; gap: 8px; }
+.linha button { flex: 1; }
+.linha input, .linha select { flex: 1; min-width: 0; }
+.check { display: flex; align-items: center; padding: 8px 0; }
+.topo { display: flex; justify-content: space-between; align-items: center; }
+.topo button { width: auto; margin: 0; padding: 8px 14px; font-size: 14px; }
+.quem { display: flex; align-items: center; gap: 10px; }
+.quem h2 { margin: 0; }
+.acoes { display: flex; gap: 6px; }
+.acoes button.mini { margin: 0; }
+
+/* cartões e caixas */
+.cartao { margin: 14px 0; padding: 16px; background: var(--cartao); border: 1px solid var(--borda); border-radius: 16px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3); }
+.cartao h3 { margin: 0 0 6px; font-size: 17px; color: var(--ouro); }
+.cartao .mudo { margin-top: 0; }
+details { margin: 8px 0; padding: 8px 12px; background: var(--cartao); border: 1px solid var(--borda); border-radius: 8px; }
+summary { padding: 6px 0; font-weight: bold; }
+
+/* avatares */
+.avatar { width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 2px solid var(--ouro); border-radius: 50%; box-sizing: border-box; background: #3a3a4a center / cover no-repeat; font-weight: bold; }
+.avatar.grande { width: 110px; height: 110px; margin: 10px auto; font-size: 44px; }
+.avatar.mini-av { width: 26px; height: 26px; font-size: 13px; }
+/* fim de base.css */

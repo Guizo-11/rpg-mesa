@@ -30,18 +30,22 @@ function salaDoMestre(socket) {
   return sala;
 }
 
-// o que a campanha guarda: mapa, grade, tokens
+// o que a campanha guarda: mapa, grade, tokens e as marcações de cada mapa
 function estadoSalvavel(sala) {
   return JSON.stringify({
     mapaId: sala.mapaId,
     grade: sala.grade,
     tokens: sala.tokens,
-    proximo: sala.proximo
+    proximo: sala.proximo,
+    marcasPorMapa: sala.marcasPorMapa || {},
+    fichas: sala.fichas || {}
   });
 }
 
 // cria (ou devolve) a sala ao vivo de uma campanha salva
 function abrirDaCampanha(campanha) {
+  campanha.ultimoAcesso = Date.now();
+  salvar();
   const codigo = campanha.codigo;
   if (!salas[codigo]) {
     const mapa = campanha.mapaId && db.mapas[campanha.mapaId] ? db.mapas[campanha.mapaId] : null;
@@ -54,6 +58,8 @@ function abrirDaCampanha(campanha) {
       grade: escala.validar(campanha.grade, escala.padrao()),
       tokens: JSON.parse(JSON.stringify(campanha.tokens || {})),
       proximo: campanha.proximo || 1,
+      marcasPorMapa: JSON.parse(JSON.stringify(campanha.marcasPorMapa || {})),
+      fichas: JSON.parse(JSON.stringify(campanha.fichas || {})),
       vazioDesde: null,
       ultimoSalvo: ''
     };
@@ -77,6 +83,8 @@ function salvarSalas() {
     campanha.grade = e.grade;
     campanha.tokens = e.tokens;
     campanha.proximo = e.proximo;
+    campanha.marcasPorMapa = e.marcasPorMapa;
+    campanha.fichas = e.fichas;
     sala.ultimoSalvo = atual;
     mudou = true;
   }

@@ -43,20 +43,25 @@
     </div>
   </div>
 
-  <div class="cartao">
-    <h3>⚔️ Minhas campanhas</h3>
-    <div id="campanhas"></div>
+    <div class="lobby-topo">
+    <h2>Minhas campanhas</h2>
+    <input id="busca-campanha" type="search" placeholder="Buscar campanha..." oninput="filtrarCampanhas()">
   </div>
 
-  <div class="cartao">
-    <h3>➕ Nova campanha</h3>
+  <div id="campanhas"></div>
+
+  <div class="lobby-acoes">
+    <button onclick="abrirCriar()">➕ Nova campanha</button>
+    <button class="sec" onclick="abrirEntrar()">🔑 Entrar com código</button>
+  </div>
+
+  <div id="painel-criar" class="cartao" style="display:none">
     <p class="mudo">Você será o mestre. Depois é só passar o código aos jogadores.</p>
     <input id="nome-campanha" placeholder="Nome da campanha (ex: RPG1)" maxlength="30">
     <button onclick="criarCampanha()">Criar campanha</button>
   </div>
 
-  <div class="cartao">
-    <h3>🔑 Entrar com código</h3>
+  <div id="painel-entrar" class="cartao" style="display:none">
     <p class="mudo">Digite o código que o mestre te passou.</p>
     <input id="cod" class="codigo" placeholder="CÓDIGO" maxlength="4">
     <button onclick="entrarSala()">Entrar na campanha</button>
@@ -165,5 +170,7 @@
 <script src="/js/camera.js"></script>
 <script src="/js/regua.js"></script>
 <script src="/js/campanhas.js"></script>
+<script src="/js/ficha.js"></script>
+<script src="/js/ficha-campos.js"></script>
 </body>
 </html>

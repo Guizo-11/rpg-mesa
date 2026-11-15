@@ -1,0 +1,51 @@
+/* ficha do token */
+
+#tela-sala:not(.pc) #painel-ficha { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2500; max-height: 72vh; overflow: auto; padding: 12px 14px 18px; background: var(--cartao); border-top: 1px solid var(--borda); border-radius: 16px 16px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.6); }
+.ficha-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-family: 'Cinzel', Georgia, serif; color: var(--ouro); }
+.ficha-cab button { width: 32px; height: 32px; margin: 0; padding: 0; font-size: 20px; background: transparent; box-shadow: none; }
+.ficha h3 { margin: 0 0 2px; }
+.ficha h4 { margin: 14px 0 6px; font-family: 'Cinzel', Georgia, serif; font-size: 15px; color: var(--ouro); }
+.ficha-sistema { margin: 6px 0; padding: 8px; font-size: 14px; }
+
+/* recursos e campos soltos */
+.ficha-recurso { display: flex; align-items: center; gap: 6px; margin: 8px 0; }
+.ficha-recurso b { flex: 1; min-width: 80px; font-size: 14px; }
+.ficha-recurso button { width: 34px; height: 34px; margin: 0; padding: 0; font-size: 18px; }
+.ficha input, .ficha select { margin: 0; padding: 8px 4px; font-size: 15px; text-align: center; }
+.ficha-recurso input { width: 60px; flex: none; }
+
+/* atributos */
+.ficha-atributos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0; }
+.ficha-atributos div { text-align: center; }
+.ficha-atributos small { display: block; margin-bottom: 2px; color: var(--mudo); }
+.ficha-atributos select, .ficha-atributos input { margin-bottom: 4px; }
+
+/* listas */
+.ficha-linha { display: flex; align-items: flex-start; gap: 6px; margin: 6px 0; padding: 6px; background: #1a1930; border: 1px solid var(--borda); border-radius: 10px; }
+.ficha-linha-campos { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.ficha-linha .col-texto { flex: 2 1 110px; text-align: left; }
+.ficha-linha .col-longo { flex: 1 1 100%; }
+.ficha-linha .col-numero { flex: 1 1 60px; }
+.ficha-linha .col-dado { flex: 1 1 70px; }
+.ficha-linha > button { width: 30px; height: 30px; margin: 0; padding: 0; font-size: 16px; }
+.ficha-mais { margin: 6px 0; padding: 8px; font-size: 14px; }
+
+.ficha textarea { width: 100%; min-height: 56px; box-sizing: border-box; padding: 8px; color: var(--texto); background: #1a1930; border: 1px solid var(--borda); border-radius: 8px; font-family: sans-serif; }
+.ficha-estado { min-height: 1em; text-align: right; font-size: 12px; color: #7ee787; }
+/* fim de ficha.css */
+/* sistema André: dano e cura, conta dos dados, outras rolagens */
+.ficha-acoes { display: flex; gap: 6px; margin: -2px 0 8px; }
+.ficha-acoes input { width: 60px; flex: none; }
+.ficha-acoes button { flex: 1; margin: 0; padding: 6px; font-size: 14px; }
+.ficha-recurso input.simples-texto { width: auto; flex: 1; text-align: left; }
+.ficha-dados:empty { display: none; }
+.ficha-dados { margin: 10px 0 4px; padding: 8px 10px; background: #1a1930; border: 1px solid var(--borda); border-radius: 10px; font-size: 12px; }
+.ficha-conta { margin: 4px 0; line-height: 1.7; }
+.ficha-conta span { margin-right: 8px; white-space: nowrap; color: var(--mudo); }
+.ficha-conta .bom { color: #7ee787; }
+.ficha-conta .ruim { color: #ff6b6b; font-weight: bold; }
+.ficha-rolagens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0; }
+.ficha-rolagens div { text-align: center; }
+.ficha-rolagens small { display: block; margin-bottom: 2px; color: var(--mudo); }
+/* parte colorida da barra embaixo do token */
+.token .vida-barra i { display: block; height: 100%; transition: width 0.2s; }

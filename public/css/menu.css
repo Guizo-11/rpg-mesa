@@ -1,0 +1,28 @@
+/* telas de menu: login, lobby, campanhas e perfil */
+
+.logo { margin: 28px 0 8px; text-align: center; }
+.logo-icone { font-size: 46px; }
+.logo h1 { margin: 6px 0; font-size: 30px; color: var(--ouro); }
+
+.cabecalho { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.cabecalho h2 { margin: 0; font-size: 18px; }
+
+.lobby-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 6px; }
+.lobby-topo h2 { margin: 0; font-size: 20px; }
+.lobby-topo input { flex: 1; width: auto; max-width: 280px; margin: 0; padding: 10px 14px; font-size: 14px; }
+.lobby-acoes { display: flex; gap: 10px; margin: 14px 0; }
+.lobby-acoes button { flex: 1; margin: 0; }
+
+/* cartão de campanha */
+.camp { display: flex; gap: 14px; margin: 10px 0; padding: 12px; background: var(--cartao); border: 1px solid var(--borda); border-radius: 14px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); }
+.camp-capa { width: 84px; height: 84px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: linear-gradient(135deg, #5b3fd1, #2a2150) center / cover; font-family: 'Cinzel', Georgia, serif; font-size: 30px; color: #fff; }
+.camp-corpo { flex: 1; min-width: 0; }
+.camp-titulo { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-family: 'Cinzel', Georgia, serif; font-size: 18px; color: var(--ouro); }
+.selo { padding: 2px 8px; border-radius: 10px; background: #38355a; font-family: sans-serif; font-size: 11px; color: var(--texto); }
+.selo.mestre { background: #5b3fd1; }
+.selo.vivo { background: #1f4d36; }
+.avatares { display: flex; margin: 8px 0 6px 6px; }
+.avatares .avatar { width: 30px; height: 30px; margin-left: -6px; font-size: 13px; border: 2px solid var(--cartao); }
+.camp-acoes { display: flex; gap: 6px; margin-top: 8px; }
+.camp-acoes button { margin: 0; }
+/* fim de menu.css */

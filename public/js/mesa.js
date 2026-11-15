@@ -10,6 +10,10 @@ function podeMover(t) {
 function aplicarMapa(src) {
   const img = $('mapa');
   if (src) {
+    img.onload = () => {
+      $('mesa').style.setProperty('--ar', img.naturalWidth / img.naturalHeight);
+      ajustarCamera();
+    };
     img.src = src;
     img.style.display = 'block';
     $('aviso').style.display = 'none';
@@ -62,6 +66,7 @@ function desenhar() {
     const rotulo = document.createElement('span');
     rotulo.textContent = t.nome;
     el.appendChild(rotulo);
+    barraDeVida(el, t);
 
     aplicarRotacao(el, t.rot || 0);
     ligarArraste(el, id);

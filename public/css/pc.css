@@ -1,0 +1,33 @@
+/* telas largas (900px ou mais) e modo PC: mapa em tela cheia e janelas flutuantes */
+
+@media (min-width: 900px) {
+  .caixa { max-width: 960px; }
+  #tela-login, #tela-perfil { max-width: 520px; margin-left: auto; margin-right: auto; }
+  .camp-capa { width: 150px; height: 96px; }
+}
+
+#tela-sala.pc { position: fixed; inset: 0; z-index: 10; overflow: hidden; background: #0e0d14; cursor: grab; touch-action: none; }
+#tela-sala.pc:active { cursor: grabbing; }
+#tela-sala.pc #mesa { position: absolute; left: 0; top: 0; width: 100vw; min-height: 0; aspect-ratio: var(--ar, 1); margin: 0; border-radius: 0; background: transparent; transform-origin: 0 0; }
+#tela-sala.pc #mapa { width: 100%; height: 100%; border-radius: 0; }
+#tela-sala.pc .token { cursor: pointer; }
+#tela-sala.pc #painel { display: none !important; }
+#tela-sala.pc .topo { position: fixed; top: 10px; right: 12px; z-index: 1000; gap: 12px; padding: 6px 8px 6px 14px; background: rgba(36, 34, 58, 0.92); border: 1px solid var(--borda); border-radius: 12px; }
+#tela-sala.pc #codigo { font-size: 18px; letter-spacing: 3px; }
+#tela-sala.pc #legenda-grade { position: fixed; left: 12px; bottom: 12px; z-index: 50; margin: 0; padding: 4px 10px; background: rgba(20, 19, 28, 0.85); border-radius: 8px; }
+#tela-sala.pc #ferramentas { position: fixed; left: 50%; bottom: 12px; z-index: 60; transform: translateX(-50%); justify-content: center; max-width: 94vw; margin: 0; padding: 6px; background: rgba(36, 34, 58, 0.92); border: 1px solid var(--borda); border-radius: 12px; }
+
+/* janelas flutuantes */
+#tela-sala.pc .janela { position: fixed; bottom: auto; z-index: 100; width: 320px; min-width: 220px; max-width: 92vw; max-height: 80vh; margin: 0; padding: 0; overflow: auto; resize: both; background: var(--cartao); border: 1px solid var(--borda); border-radius: 12px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55); cursor: default; touch-action: auto; }
+#tela-sala.pc .janela-cab { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 14px; background: #2d2a4a; border-bottom: 1px solid var(--borda); font-family: 'Cinzel', Georgia, serif; font-size: 14px; color: var(--ouro); cursor: move; user-select: none; touch-action: none; }
+#tela-sala.pc .janela-x { width: 26px; height: 26px; margin: 0; padding: 0; font-size: 18px; line-height: 1; color: var(--texto); background: transparent; box-shadow: none; }
+#tela-sala.pc .janela-corpo { padding: 10px 12px 12px; }
+
+/* menu ☰ e zoom */
+#btn-menu { position: fixed; top: 10px; left: 10px; z-index: 1000; width: 44px; height: 44px; margin: 0; padding: 0; border-radius: 12px; font-size: 22px; }
+#menu-pc { position: fixed; top: 60px; left: 10px; z-index: 1000; min-width: 210px; padding: 6px; background: var(--cartao); border: 1px solid var(--borda); border-radius: 12px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55); }
+.menu-item { display: block; width: 100%; margin: 0; padding: 10px 12px; text-align: left; font-weight: normal; background: transparent; box-shadow: none; border-radius: 8px; }
+.menu-item:hover { background: #2d2a4a; }
+#zoom-pc { position: fixed; right: 12px; bottom: 12px; z-index: 50; display: flex; gap: 6px; }
+#zoom-pc button { width: 40px; height: 40px; margin: 0; padding: 0; font-size: 20px; }
+/* fim de pc.css */
