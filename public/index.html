@@ -4,6 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mesa de RPG</title>
+<script>
+window.onerror = function (msg, src, linha) {
+  alert('ERRO: ' + msg + ' (' + String(src).split('/').pop() + ':' + linha + ')');
+};
+window.addEventListener('load', function () {
+  var p = document.getElementById('carregando');
+  function aviso(t) { if (p && p.style.display !== 'none') p.textContent = t; }
+  if (typeof socket === 'undefined') return aviso('Falhou: o socket não foi criado');
+  aviso(socket.connected ? 'Conectado, esperando resposta do servidor...' : 'Tentando conectar ao servidor...');
+  socket.on('connect', function () { aviso('Conectado, esperando resposta do servidor...'); });
+  socket.on('connect_error', function (e) { aviso('Erro de conexão: ' + e.message); });
+  socket.on('disconnect', function (r) { aviso('Desconectado: ' + r); });
+});
+</script>
 <link rel="stylesheet" href="/css/estilo.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
