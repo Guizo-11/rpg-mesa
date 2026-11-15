@@ -20,9 +20,12 @@ function aplicarMapa(src) {
   }
 }
 
+// gira a setinha e também a imagem do token
 function aplicarRotacao(el, rot) {
   const giro = el.querySelector('.giro');
+  const foto = el.querySelector('.foto');
   if (giro) giro.style.transform = 'rotate(' + rot + 'deg)';
+  if (foto) foto.style.transform = 'rotate(' + rot + 'deg)';
 }
 
 function desenhar() {
@@ -37,13 +40,16 @@ function desenhar() {
     if (id === selecionado) el.classList.add('sel');
     el.id = id;
     el.style.background = t.cor;
-    if (t.imagem) {
-      el.style.backgroundImage = 'url("' + t.imagem + '")';
-      el.style.backgroundSize = 'cover';
-      el.style.backgroundPosition = 'center';
-    }
+    el.style.setProperty('--p', (((t.tamanho || 1) * 100) / grade.colunas).toFixed(3));
     el.style.left = (t.x * 100) + '%';
     el.style.top = (t.y * 100) + '%';
+
+    if (t.imagem) {
+      const foto = document.createElement('div');
+      foto.className = 'foto';
+      foto.style.backgroundImage = 'url("' + t.imagem + '")';
+      el.appendChild(foto);
+    }
 
     const giro = document.createElement('div');
     giro.className = 'giro';
@@ -61,6 +67,7 @@ function desenhar() {
     ligarArraste(el, id);
     mesa.appendChild(el);
   }
+  atualizarMoldura();
   atualizarPainelToken();
 }
 
@@ -70,12 +77,13 @@ function selecionar(id) {
     e.classList.toggle('sel', e.id === id);
   });
   atualizarPainelToken();
+  atualizarMoldura();
 }
 
 function atualizarPainelToken() {
   const painel = $('painel-token');
   const t = selecionado ? tokens[selecionado] : null;
-  if (!t || !podeMover(t)) {
+  if (!t || !podeMover(t) || !souMestre) {
     painel.style.display = 'none';
     return;
   }
@@ -155,6 +163,7 @@ socket.on('estado', (e) => {
   $('papel').textContent = e.mestre ? 'Mestre' : 'Jogador';
   tokens = e.tokens;
   selecionado = null;
+  usarGrade(e.grade);
   aplicarMapa(e.mapa);
   desenhar();
 });

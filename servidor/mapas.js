@@ -5,6 +5,7 @@ const express = require('express');
 const { db, salvar, PASTA_MAPAS } = require('./banco');
 const { usuarioDoToken } = require('./contas');
 const { exigirLogin } = require('./util');
+const escala = require('./escala');
 const salas = require('./salas');
 
 function mapasDoUsuario(chave) {
@@ -46,7 +47,10 @@ function ligar({ io, socket, ouvir }) {
     const mapa = db.mapas[id];
     if (!sala || !mapa || mapa.dono !== socket.data.usuario) return;
     sala.mapa = '/mapas/' + mapa.arquivo;
+    sala.mapaId = id;
+    sala.grade = escala.validar(mapa.grade, escala.padrao());
     io.to(socket.data.sala).emit('mapa', sala.mapa);
+    io.to(socket.data.sala).emit('grade', sala.grade);
   });
 
   ouvir('apagar-mapa', ({ id }, responder) => {
@@ -60,6 +64,7 @@ function ligar({ io, socket, ouvir }) {
     for (const codigo in salas.lista) {
       if (salas.lista[codigo].mapa === url) {
         salas.lista[codigo].mapa = null;
+        salas.lista[codigo].mapaId = null;
         io.to(codigo).emit('mapa', null);
       }
     }

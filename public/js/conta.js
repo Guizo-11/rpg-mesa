@@ -26,6 +26,7 @@ function sair() {
 
 // ---------- perfil ----------
 function atualizarCabecalho() {
+  carregarCampanhas();
   socket.emit('perfil', {}, (r) => {
     if (!r.ok) return;
     $('meu-nome').textContent = r.nome;

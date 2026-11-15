@@ -39,6 +39,7 @@ function colocar(sala, salvo) {
     x: 0.5,
     y: 0.5,
     rot: 0,
+    tamanho: 1,
     dono: null
   };
 }
@@ -107,7 +108,7 @@ function ligar({ io, socket, ouvir }) {
     let r = Math.round(Number(rot));
     if (!isFinite(r)) r = 0;
     t.rot = ((r % 360) + 360) % 360;
-    io.to(socket.data.sala).emit('token-girado', { id, rot: t.rot });
+    socket.to(socket.data.sala).emit('token-girado', { id, rot: t.rot });
   });
 
   ouvir('atribuir-token', ({ id, usuario }) => {
@@ -116,6 +117,17 @@ function ligar({ io, socket, ouvir }) {
     if (usuario && !tem(db.usuarios, usuario)) return;
     sala.tokens[id].dono = usuario || null;
     io.to(socket.data.sala).emit('tokens', sala.tokens);
+  });
+
+  // tamanho livre, arrastando os cantos (só o mestre)
+  ouvir('tamanho-token', ({ id, tamanho }) => {
+    const sala = salas.salaDoMestre(socket);
+    if (!sala || !tem(sala.tokens, id)) return;
+    const n = Number(tamanho);
+    if (!isFinite(n)) return;
+    const t = sala.tokens[id];
+    t.tamanho = Math.min(12, Math.max(0.25, n));
+    socket.to(socket.data.sala).emit('token-redimensionado', { id, tamanho: t.tamanho });
   });
 
   ouvir('remover-token', ({ id }) => {

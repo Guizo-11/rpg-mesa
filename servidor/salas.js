@@ -1,16 +1,9 @@
-const { db } = require('./banco');
-const { exigirLogin } = require('./util');
+const { db, salvar } = require('./banco');
+const escala = require('./escala');
+
+if (!db.campanhas) db.campanhas = {};
 
 const salas = {};
-
-function gerarCodigo() {
-  const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let c = '';
-  for (let i = 0; i < 4; i++) {
-    c += letras[Math.floor(Math.random() * letras.length)];
-  }
-  return c;
-}
 
 // nome e foto vêm sempre da conta, então mudanças no perfil aparecem na hora
 function listaJogadores(sala) {
@@ -31,8 +24,72 @@ function atualizarJogadores(io, chave) {
   }
 }
 
-// limpa salas vazias há mais de 30 minutos
+function salaDoMestre(socket) {
+  const sala = salas[socket.data.sala];
+  if (!sala || sala.mestre !== socket.data.usuario) return null;
+  return sala;
+}
+
+// o que a campanha guarda: mapa, grade, tokens
+function estadoSalvavel(sala) {
+  return JSON.stringify({
+    mapaId: sala.mapaId,
+    grade: sala.grade,
+    tokens: sala.tokens,
+    proximo: sala.proximo
+  });
+}
+
+// cria (ou devolve) a sala ao vivo de uma campanha salva
+function abrirDaCampanha(campanha) {
+  const codigo = campanha.codigo;
+  if (!salas[codigo]) {
+    const mapa = campanha.mapaId && db.mapas[campanha.mapaId] ? db.mapas[campanha.mapaId] : null;
+    const sala = {
+      campanhaId: campanha.id,
+      mestre: campanha.mestre,
+      jogadores: {},
+      mapa: mapa ? '/mapas/' + mapa.arquivo : null,
+      mapaId: mapa ? campanha.mapaId : null,
+      grade: escala.validar(campanha.grade, escala.padrao()),
+      tokens: JSON.parse(JSON.stringify(campanha.tokens || {})),
+      proximo: campanha.proximo || 1,
+      vazioDesde: null,
+      ultimoSalvo: ''
+    };
+    sala.ultimoSalvo = estadoSalvavel(sala);
+    salas[codigo] = sala;
+  }
+  return salas[codigo];
+}
+
+// guarda no disco o que mudou nas salas ao vivo
+function salvarSalas() {
+  let mudou = false;
+  for (const codigo in salas) {
+    const sala = salas[codigo];
+    const campanha = db.campanhas[sala.campanhaId];
+    if (!campanha) continue;
+    const atual = estadoSalvavel(sala);
+    if (atual === sala.ultimoSalvo) continue;
+    const e = JSON.parse(atual);
+    campanha.mapaId = e.mapaId;
+    campanha.grade = e.grade;
+    campanha.tokens = e.tokens;
+    campanha.proximo = e.proximo;
+    sala.ultimoSalvo = atual;
+    mudou = true;
+  }
+  if (mudou) salvar();
+}
+
+setInterval(salvarSalas, 5000);
+process.on('SIGTERM', () => { salvarSalas(); process.exit(0); });
+process.on('SIGINT', () => { salvarSalas(); process.exit(0); });
+
+// limpa salas vazias há mais de 30 minutos (o progresso já está salvo)
 setInterval(() => {
+  salvarSalas();
   const agora = Date.now();
   for (const codigo in salas) {
     const v = salas[codigo].vazioDesde;
@@ -40,69 +97,66 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
-function salaDoMestre(socket) {
-  const sala = salas[socket.data.sala];
-  if (!sala || sala.mestre !== socket.data.usuario) return null;
-  return sala;
+function sairDaSala(io, socket) {
+  const codigo = socket.data.sala;
+  const sala = salas[codigo];
+  socket.data.sala = null;
+  if (!sala) return;
+  socket.leave(codigo);
+  delete sala.jogadores[socket.id];
+  if (Object.keys(sala.jogadores).length === 0) {
+    sala.vazioDesde = Date.now();
+  } else {
+    io.to(codigo).emit('jogadores', listaJogadores(sala));
+  }
+}
+
+function entrarNaSala(io, socket, codigo) {
+  if (socket.data.sala && socket.data.sala !== codigo) sairDaSala(io, socket);
+  const sala = salas[codigo];
+  sala.vazioDesde = null;
+  sala.jogadores[socket.id] = { chave: socket.data.usuario };
+  socket.join(codigo);
+  socket.data.sala = codigo;
+  io.to(codigo).emit('jogadores', listaJogadores(sala));
+  socket.emit('estado', {
+    mapa: sala.mapa,
+    grade: sala.grade,
+    tokens: sala.tokens,
+    voce: socket.data.usuario,
+    mestre: sala.mestre === socket.data.usuario
+  });
+}
+
+// campanha apagada: avisa quem está dentro e fecha a sala
+function encerrar(io, codigo) {
+  if (!salas[codigo]) return;
+  io.to(codigo).emit('campanha-encerrada', {});
+  delete salas[codigo];
 }
 
 function ligar({ io, socket, ouvir }) {
-  function sairDaSala() {
-    const codigo = socket.data.sala;
-    const sala = salas[codigo];
-    socket.data.sala = null;
+  // grade e escala: o mestre define, e o mapa em uso lembra
+  ouvir('definir-grade', (dados) => {
+    const sala = salaDoMestre(socket);
     if (!sala) return;
-    socket.leave(codigo);
-    delete sala.jogadores[socket.id];
-    if (Object.keys(sala.jogadores).length === 0) {
-      sala.vazioDesde = Date.now();
-    } else {
-      io.to(codigo).emit('jogadores', listaJogadores(sala));
+    sala.grade = escala.validar(dados, sala.grade);
+    if (sala.mapaId && db.mapas[sala.mapaId]) {
+      db.mapas[sala.mapaId].grade = sala.grade;
+      salvar();
     }
-  }
-
-  function entrarNaSala(codigo) {
-    if (socket.data.sala && socket.data.sala !== codigo) sairDaSala();
-    const sala = salas[codigo];
-    sala.vazioDesde = null;
-    sala.jogadores[socket.id] = { chave: socket.data.usuario };
-    socket.join(codigo);
-    socket.data.sala = codigo;
-    io.to(codigo).emit('jogadores', listaJogadores(sala));
-    socket.emit('estado', {
-      mapa: sala.mapa,
-      tokens: sala.tokens,
-      voce: socket.data.usuario,
-      mestre: sala.mestre === socket.data.usuario
-    });
-  }
-
-  ouvir('criar-sala', (_, responder) => {
-    if (!exigirLogin(socket, responder)) return;
-    let codigo;
-    do { codigo = gerarCodigo(); } while (salas[codigo]);
-    salas[codigo] = {
-      mestre: socket.data.usuario,
-      jogadores: {},
-      mapa: null,
-      tokens: {},
-      proximo: 1,
-      vazioDesde: null
-    };
-    entrarNaSala(codigo);
-    responder({ ok: true, codigo, mestre: true });
+    io.to(socket.data.sala).emit('grade', sala.grade);
   });
 
-  ouvir('entrar-sala', ({ codigo }, responder) => {
-    if (!exigirLogin(socket, responder)) return;
-    codigo = String(codigo || '').trim().toUpperCase();
-    const sala = salas[codigo];
-    if (!sala) return responder({ ok: false, erro: 'Sala não encontrada' });
-    entrarNaSala(codigo);
-    responder({ ok: true, codigo, mestre: sala.mestre === socket.data.usuario });
-  });
-
-  socket.on('disconnect', sairDaSala);
+  socket.on('disconnect', () => sairDaSala(io, socket));
 }
 
-module.exports = { ligar, lista: salas, salaDoMestre, atualizarJogadores };
+module.exports = {
+  ligar,
+  lista: salas,
+  salaDoMestre,
+  atualizarJogadores,
+  abrirDaCampanha,
+  entrar: entrarNaSala,
+  encerrar
+};

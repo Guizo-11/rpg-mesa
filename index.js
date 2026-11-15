@@ -7,9 +7,11 @@ const { criarOuvinte } = require('./servidor/util');
 const contas = require('./servidor/contas');
 const perfil = require('./servidor/perfil');
 const salas = require('./servidor/salas');
+const campanhas = require('./servidor/campanhas');
 const mapas = require('./servidor/mapas');
 const imagens = require('./servidor/imagens');
 const tokens = require('./servidor/tokens');
+const setas = require('./servidor/setas');
 
 const app = express();
 const server = http.createServer(app);
@@ -24,8 +26,10 @@ io.on('connection', (socket) => {
   contas.ligar(ctx);
   perfil.ligar(ctx);
   salas.ligar(ctx);
+  campanhas.ligar(ctx);
   mapas.ligar(ctx);
   tokens.ligar(ctx);
+  setas.ligar(ctx);
 });
 
 const PORTA = process.env.PORT || 3000;

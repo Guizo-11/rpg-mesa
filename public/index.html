@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mesa de RPG</title>
 <link rel="stylesheet" href="/css/estilo.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="caixa">
@@ -12,26 +14,53 @@
 <p id="carregando">Conectando...</p>
 
 <div id="tela-login" class="tela">
-  <h2>Mesa de RPG</h2>
-  <input id="login-nome" placeholder="Nome de usuário" maxlength="16" autocomplete="username">
-  <input id="login-senha" type="password" placeholder="Senha" autocomplete="current-password">
-  <button onclick="fazerLogin()">Entrar</button>
-  <button class="sec" onclick="criarConta()">Criar conta</button>
-  <p class="erro" id="erro-login"></p>
+  <div class="logo">
+    <div class="logo-icone">🎲</div>
+    <h1>Mesa de RPG</h1>
+    <p class="mudo">Entre pra jogar com seus amigos</p>
+  </div>
+  <div class="cartao">
+    <input id="login-nome" placeholder="Nome de usuário" maxlength="16" autocomplete="username">
+    <input id="login-senha" type="password" placeholder="Senha" autocomplete="current-password">
+    <button onclick="fazerLogin()">Entrar</button>
+    <button class="sec" onclick="criarConta()">Criar conta</button>
+    <p class="erro" id="erro-login"></p>
+  </div>
 </div>
 
 <div id="tela-lobby" class="tela">
-  <div class="topo">
+  <div class="cartao cabecalho">
     <div class="quem">
       <div id="meu-avatar" class="avatar"></div>
-      <h2>Olá, <span id="meu-nome"></span></h2>
+      <div>
+        <small class="mudo">Bem-vindo(a)</small>
+        <h2>Olá, <span id="meu-nome"></span></h2>
+      </div>
     </div>
-    <button class="sec" onclick="sair()">Sair</button>
+    <div class="acoes">
+      <button class="sec mini" onclick="abrirPerfil()">Perfil</button>
+      <button class="sec mini" onclick="sair()">Sair</button>
+    </div>
   </div>
-  <button class="sec" onclick="abrirPerfil()">Meu perfil</button>
-  <button onclick="criarSala()">Criar sala (mestre)</button>
-  <input id="cod" placeholder="Código da sala" maxlength="4">
-  <button onclick="entrarSala()">Entrar na sala</button>
+
+  <div class="cartao">
+    <h3>⚔️ Minhas campanhas</h3>
+    <div id="campanhas"></div>
+  </div>
+
+  <div class="cartao">
+    <h3>➕ Nova campanha</h3>
+    <p class="mudo">Você será o mestre. Depois é só passar o código aos jogadores.</p>
+    <input id="nome-campanha" placeholder="Nome da campanha (ex: RPG1)" maxlength="30">
+    <button onclick="criarCampanha()">Criar campanha</button>
+  </div>
+
+  <div class="cartao">
+    <h3>🔑 Entrar com código</h3>
+    <p class="mudo">Digite o código que o mestre te passou.</p>
+    <input id="cod" class="codigo" placeholder="CÓDIGO" maxlength="4">
+    <button onclick="entrarSala()">Entrar na campanha</button>
+  </div>
   <p class="erro" id="erro-lobby"></p>
 </div>
 
@@ -71,6 +100,23 @@
       <div id="biblioteca"></div>
     </details>
     <details>
+      <summary>Grade e escala</summary>
+      <label class="check"><input id="grade-mostrar" type="checkbox" onchange="enviarGrade()"> Mostrar grade</label>
+      <small>Quadrados na largura do mapa:</small>
+      <input id="grade-colunas" type="number" min="4" max="80" value="12">
+      <small>Cada quadrado vale:</small>
+      <div class="linha">
+        <input id="grade-valor" type="number" min="0.01" step="any" value="1">
+        <select id="grade-unidade">
+          <option value="cm">cm</option>
+          <option value="m">m</option>
+          <option value="km">km</option>
+          <option value="pés">pés</option>
+        </select>
+      </div>
+      <button onclick="enviarGrade()">Aplicar</button>
+    </details>
+    <details>
       <summary>Meus tokens</summary>
       <input id="nomeToken" placeholder="Nome do token (ex: Goblin)" maxlength="12">
       <input id="cor-token" type="color" value="#7c5cff">
@@ -84,17 +130,18 @@
   <div id="mesa">
     <div id="aviso">Aguardando o mestre escolher o mapa</div>
     <img id="mapa">
+    <div id="grade-camada"></div>
   </div>
+  <div id="legenda-grade"></div>
 
   <div id="painel-token" style="display:none">
     <div class="barra">
       <b id="sel-nome"></b>
-      <button class="mini sec" onclick="girar(-45)">↺</button>
-      <button class="mini sec" onclick="girar(45)">↻</button>
     </div>
     <div id="sel-mestre" style="display:none">
       <small>Quem controla:</small>
       <select id="sel-dono" onchange="atribuirDono()"></select>
+      <small>Pra mudar o tamanho, arraste os cantos do quadrado em volta do token.</small>
       <button class="sec" onclick="tirarDaMesa()">Tirar da mesa</button>
     </div>
   </div>
@@ -102,14 +149,21 @@
 
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></scrip>
 <script src="/js/comum.js"></script>
 <script src="/js/upload.js"></script>
 <script src="/js/conta.js"></script>
 <script src="/js/salas.js"></script>
 <script src="/js/mapas.js"></script>
 <script src="/js/tokens.js"></script>
+<script src="/js/grade.js"></script>
 <script src="/js/mesa.js"></script>
+<script src="/js/moldura.js"></script>
+<script src="/js/giro.js"></script>
 <script src="/js/inicio.js"></script>
+<script src="/js/janelas.js"></script>
+<script src="/js/camera.js"></script>
+<script src="/js/regua.js"></script>
+<script src="/js/campanhas.js"></script>
 </body>
 </html>
