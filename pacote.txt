@@ -1,0 +1,307 @@
+const { db, salvar } = require('./banco');
+const escala = require('./escala');
+
+if (!db.campanhas) db.campanhas = {};
+
+const salas = {};
+
+// nome e foto vêm sempre da conta, então mudanças no perfil aparecem na hora
+function listaJogadores(sala) {
+  const vistos = {};
+  Object.values(sala.jogadores).forEach((j) => { vistos[j.chave] = true; });
+  return Object.keys(vistos).map((chave) => {
+    const u = db.usuarios[chave];
+    return { chave, nome: u.nome, foto: u.foto || null };
+  });
+}
+
+function atualizarJogadores(io, chave) {
+  for (const codigo in salas) {
+    const sala = salas[codigo];
+    if (Object.values(sala.jogadores).some((j) => j.chave === chave)) {
+      io.to(codigo).emit('jogadores', listaJogadores(sala));
+    }
+  }
+}
+
+function salaDoMestre(socket) {
+  const sala = salas[socket.data.sala];
+  if (!sala || sala.mestre !== socket.data.usuario) return null;
+  return sala;
+}
+
+// o que a campanha guarda: mapa, grade, tokens e as marcações de cada mapa
+function estadoSalvavel(sala) {
+  return JSON.stringify({
+    mapaId: sala.mapaId,
+    grade: sala.grade,
+    tokens: sala.tokens,
+    proximo: sala.proximo,
+    marcasPorMapa: sala.marcasPorMapa || {},
+    fichas: sala.fichas || {}
+  });
+}
+
+// cria (ou devolve) a sala ao vivo de uma campanha salva
+function abrirDaCampanha(campanha) {
+  campanha.ultimoAcesso = Date.now();
+  salvar();
+  const codigo = campanha.codigo;
+  if (!salas[codigo]) {
+    const mapa = campanha.mapaId && db.mapas[campanha.mapaId] ? db.mapas[campanha.mapaId] : null;
+    const sala = {
+      campanhaId: campanha.id,
+      mestre: campanha.mestre,
+      jogadores: {},
+      mapa: mapa ? '/mapas/' + mapa.arquivo : null,
+      mapaId: mapa ? campanha.mapaId : null,
+      grade: escala.validar(campanha.grade, escala.padrao()),
+      tokens: JSON.parse(JSON.stringify(campanha.tokens || {})),
+      proximo: campanha.proximo || 1,
+      marcasPorMapa: JSON.parse(JSON.stringify(campanha.marcasPorMapa || {})),
+      fichas: JSON.parse(JSON.stringify(campanha.fichas || {})),
+      vazioDesde: null,
+      ultimoSalvo: ''
+    };
+    sala.ultimoSalvo = estadoSalvavel(sala);
+    salas[codigo] = sala;
+  }
+  return salas[codigo];
+}
+
+// guarda no disco o que mudou nas salas ao vivo
+function salvarSalas() {
+  let mudou = false;
+  for (const codigo in salas) {
+    const sala = salas[codigo];
+    const campanha = db.campanhas[sala.campanhaId];
+    if (!campanha) continue;
+    const atual = estadoSalvavel(sala);
+    if (atual === sala.ultimoSalvo) continue;
+    const e = JSON.parse(atual);
+    campanha.mapaId = e.mapaId;
+    campanha.grade = e.grade;
+    campanha.tokens = e.tokens;
+    campanha.proximo = e.proximo;
+    campanha.marcasPorMapa = e.marcasPorMapa;
+    campanha.fichas = e.fichas;
+    sala.ultimoSalvo = atual;
+    mudou = true;
+  }
+  if (mudou) salvar();
+}
+
+setInterval(salvarSalas, 5000);
+process.on('SIGTERM', () => { salvarSalas(); process.exit(0); });
+process.on('SIGINT', () => { salvarSalas(); process.exit(0); });
+
+// limpa salas vazias há mais de 30 minutos (o progresso já está salvo)
+setInterval(() => {
+  salvarSalas();
+  const agora = Date.now();
+  for (const codigo in salas) {
+    const v = salas[codigo].vazioDesde;
+    if (v && agora - v > 30 * 60 * 1000) delete salas[codigo];
+  }
+}, 60 * 1000);
+
+function sairDaSala(io, socket) {
+  const codigo = socket.data.sala;
+  const sala = salas[codigo];
+  socket.data.sala = null;
+  if (!sala) return;
+  socket.leave(codigo);
+  delete sala.jogadores[socket.id];
+  if (Object.keys(sala.jogadores).length === 0) {
+    sala.vazioDesde = Date.now();
+  } else {
+    io.to(codigo).emit('jogadores', listaJogadores(sala));
+  }
+}
+
+function entrarNaSala(io, socket, codigo) {
+  if (socket.data.sala && socket.data.sala !== codigo) sairDaSala(io, socket);
+  const sala = salas[codigo];
+  sala.vazioDesde = null;
+  sala.jogadores[socket.id] = { chave: socket.data.usuario };
+  socket.join(codigo);
+  socket.data.sala = codigo;
+  io.to(codigo).emit('jogadores', listaJogadores(sala));
+  socket.emit('estado', {
+    mapa: sala.mapa,
+    grade: sala.grade,
+    tokens: sala.tokens,
+    voce: socket.data.usuario,
+    mestre: sala.mestre === socket.data.usuario
+  });
+}
+
+// campanha apagada: avisa quem está dentro e fecha a sala
+function encerrar(io, codigo) {
+  if (!salas[codigo]) return;
+  io.to(codigo).emit('campanha-encerrada', {});
+  delete salas[codigo];
+}
+
+function ligar({ io, socket, ouvir }) {
+  // grade e escala: o mestre define, e o mapa em uso lembra
+  ouvir('definir-grade', (dados) => {
+    const sala = salaDoMestre(socket);
+    if (!sala) return;
+    sala.grade = escala.validar(dados, sala.grade);
+    if (sala.mapaId && db.mapas[sala.mapaId]) {
+      db.mapas[sala.mapaId].grade = sala.grade;
+      salvar();
+    }
+    io.to(socket.data.sala).emit('grade', sala.grade);
+  });
+
+  socket.on('disconnect', () => sairDaSala(io, socket));
+}
+
+module.exports = {
+  ligar,
+  lista: salas,
+  salaDoMestre,
+  atualizarJogadores,
+  abrirDaCampanha,
+  entrar: entrarNaSala,
+  encerrar
+};// marcações do mapa: desenho, texto, seta fixa, ping e a seta "ao vivo"
+const crypto = require('crypto');
+const salas = require('./salas');
+
+const MAX_POR_PESSOA = 60;
+
+function num(n) {
+  n = Number(n);
+  if (!isFinite(n)) return 0.5;
+  return Math.round(Math.min(1, Math.max(0, n)) * 10000) / 10000;
+}
+
+// aceita só cores no formato #rrggbb
+function corValida(c) {
+  return typeof c === 'string' && /^#[0-9a-fA-F]{6}$/.test(c) ? c.toLowerCase() : null;
+}
+
+function publica(m) {
+  return Object.assign({ id: m.id, tipo: m.tipo, dono: m.dono }, m.dados);
+}
+
+// as marcações ficam guardadas por mapa: cada mapa lembra os seus desenhos e textos
+function marcasDe(sala) {
+  sala.marcasPorMapa = sala.marcasPorMapa || {};
+  const chave = sala.mapaId || 'sem-mapa';
+  if (!sala.marcasPorMapa[chave]) sala.marcasPorMapa[chave] = {};
+  return sala.marcasPorMapa[chave];
+}
+
+function removerMarca(io, codigo, id) {
+  const sala = salas.lista[codigo];
+  if (!sala) return;
+  const marcas = marcasDe(sala);
+  if (!marcas[id]) return;
+  delete marcas[id];
+  io.to(codigo).emit('marca-removida', { id });
+}
+
+function adicionar(io, codigo, sala, dono, tipo, dados) {
+  const marcas = marcasDe(sala);
+  sala.seqMarcas = Math.max(Date.now(), (sala.seqMarcas || 0) + 1);
+  const minhas = Object.values(marcas)
+    .filter((m) => m.dono === dono)
+    .sort((a, b) => a.seq - b.seq);
+  while (minhas.length >= MAX_POR_PESSOA) removerMarca(io, codigo, minhas.shift().id);
+  const id = crypto.randomBytes(4).toString('hex');
+  const marca = { id, tipo, dono, dados, seq: sala.seqMarcas };
+  marcas[id] = marca;
+  io.to(codigo).emit('marca', publica(marca));
+}
+
+function ligar({ io, socket, ouvir }) {
+  ouvir('nova-marca', (d) => {
+    const codigo = socket.data.sala;
+    const sala = salas.lista[codigo];
+    if (!sala) return;
+    const dono = socket.data.usuario;
+    const cor = corValida(d.cor);
+
+    if (d.tipo === 'seta') {
+      adicionar(io, codigo, sala, dono, 'seta', {
+        x1: num(d.x1), y1: num(d.y1), x2: num(d.x2), y2: num(d.y2), cor
+      });
+    } else if (d.tipo === 'texto') {
+      const texto = String(d.texto || '').trim().slice(0, 40);
+      if (!texto) return;
+      adicionar(io, codigo, sala, dono, 'texto', { x: num(d.x), y: num(d.y), texto, cor });
+    } else if (d.tipo === 'desenho') {
+      if (!Array.isArray(d.pontos) || d.pontos.length < 2) return;
+      const pontos = d.pontos.slice(0, 800).map((p) => [num(p[0]), num(p[1])]);
+      adicionar(io, codigo, sala, dono, 'desenho', { pontos, cor });
+    }
+  });
+
+  // ping: só aparece e some, nada fica guardado
+  ouvir('ping', ({ x, y, cor }) => {
+    const codigo = socket.data.sala;
+    if (!salas.lista[codigo]) return;
+    const agora = Date.now();
+    if (agora - (socket.data.ultimoPing || 0) < 400) return;
+    socket.data.ultimoPing = agora;
+    io.to(codigo).emit('ping', {
+      x: num(x), y: num(y), dono: socket.data.usuario, cor: corValida(cor)
+    });
+  });
+
+  // seta "ao vivo": os outros veem enquanto você arrasta
+  ouvir('seta-viva', ({ x1, y1, x2, y2, cor }) => {
+    const codigo = socket.data.sala;
+    if (!salas.lista[codigo]) return;
+    socket.to(codigo).emit('seta-viva', {
+      dono: socket.data.usuario,
+      x1: num(x1), y1: num(y1), x2: num(x2), y2: num(y2),
+      cor: corValida(cor)
+    });
+  });
+
+  ouvir('seta-viva-fim', () => {
+    const codigo = socket.data.sala;
+    if (!codigo) return;
+    socket.to(codigo).emit('seta-viva-fim', { dono: socket.data.usuario });
+  });
+
+  // se a pessoa sair no meio do arrasto, a seta dela some
+  socket.on('disconnecting', () => {
+    for (const sala of socket.rooms) {
+      if (sala !== socket.id) socket.to(sala).emit('seta-viva-fim', { dono: socket.data.usuario });
+    }
+  });
+
+  ouvir('desfazer', () => {
+    const codigo = socket.data.sala;
+    const sala = salas.lista[codigo];
+    if (!sala) return;
+    const minhas = Object.values(marcasDe(sala))
+      .filter((m) => m.dono === socket.data.usuario)
+      .sort((a, b) => b.seq - a.seq);
+    if (minhas[0]) removerMarca(io, codigo, minhas[0].id);
+  });
+
+  // cada um limpa as suas; o mestre limpa todas (só do mapa atual)
+  ouvir('limpar-marcas', () => {
+    const codigo = socket.data.sala;
+    const sala = salas.lista[codigo];
+    if (!sala) return;
+    const mestre = sala.mestre === socket.data.usuario;
+    Object.values(marcasDe(sala)).forEach((m) => {
+      if (mestre || m.dono === socket.data.usuario) removerMarca(io, codigo, m.id);
+    });
+  });
+
+  ouvir('listar-marcas', (_, responder) => {
+    const sala = salas.lista[socket.data.sala];
+    responder({ ok: true, marcas: sala ? Object.values(marcasDe(sala)).map(publica) : [] });
+  });
+}
+
+module.exports = { ligar };

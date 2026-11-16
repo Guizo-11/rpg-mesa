@@ -38,7 +38,8 @@ function estadoSalvavel(sala) {
     tokens: sala.tokens,
     proximo: sala.proximo,
     marcasPorMapa: sala.marcasPorMapa || {},
-    fichas: sala.fichas || {}
+    fichas: sala.fichas || {},
+    nevoaPorMapa: sala.nevoaPorMapa || {}
   });
 }
 
@@ -59,6 +60,7 @@ function abrirDaCampanha(campanha) {
       tokens: JSON.parse(JSON.stringify(campanha.tokens || {})),
       proximo: campanha.proximo || 1,
       marcasPorMapa: JSON.parse(JSON.stringify(campanha.marcasPorMapa || {})),
+      nevoaPorMapa: JSON.parse(JSON.stringify(campanha.nevoaPorMapa || {})),
       fichas: JSON.parse(JSON.stringify(campanha.fichas || {})),
       vazioDesde: null,
       ultimoSalvo: ''
@@ -83,6 +85,7 @@ function salvarSalas() {
     campanha.grade = e.grade;
     campanha.tokens = e.tokens;
     campanha.proximo = e.proximo;
+    campanha.nevoaPorMapa = e.nevoaPorMapa;
     campanha.marcasPorMapa = e.marcasPorMapa;
     campanha.fichas = e.fichas;
     sala.ultimoSalvo = atual;

@@ -1,4 +1,4 @@
-// câmera do modo PC: roda do mouse dá zoom, arrastar o fundo move o mapa
+// câmera do mapa: roda do mouse e botões − ⌂ + dão zoom; um dedo (ou o mouse) arrasta; dois dedos dão zoom
 
 const camera = { x: 0, y: 0, s: 1, ajustado: false };
 
@@ -60,21 +60,66 @@ if (modoPC) {
     zoomEm(e.deltaY < 0 ? 1.1 : 1 / 1.1, e.clientX, e.clientY);
   }, { passive: false });
 
-  // arrastar o fundo move o mapa
-  let arrasto = null;
+  // gestos no fundo: um dedo arrasta o mapa, dois dedos dão zoom (e também movem)
+  const dedos = new Map();
+  let gesto = null;
+
+  function iniciarGesto() {
+    const pts = Array.from(dedos.values());
+    if (pts.length === 1) {
+      gesto = { tipo: 'arrasto', px: pts[0].x, py: pts[0].y, x: camera.x, y: camera.y };
+    } else if (pts.length >= 2) {
+      const [a, b] = pts;
+      gesto = {
+        tipo: 'pinca',
+        d0: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+        s0: camera.s,
+        cx0: (a.x + b.x) / 2,
+        cy0: (a.y + b.y) / 2,
+        x0: camera.x,
+        y0: camera.y
+      };
+    } else {
+      gesto = null;
+    }
+  }
+
   sala.addEventListener('pointerdown', (e) => {
-    if (arrasto || e.target.closest('.token')) return;
+    if (e.target.closest('.token')) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
-    arrasto = { id: e.pointerId, px: e.clientX, py: e.clientY, x: camera.x, y: camera.y };
+    dedos.set(e.pointerId, { x: e.clientX, y: e.clientY });
     sala.setPointerCapture(e.pointerId);
+    iniciarGesto();
   });
+
   sala.addEventListener('pointermove', (e) => {
-    if (!arrasto || e.pointerId !== arrasto.id) return;
-    camera.x = arrasto.x + (e.clientX - arrasto.px);
-    camera.y = arrasto.y + (e.clientY - arrasto.py);
+    const dedo = dedos.get(e.pointerId);
+    if (!dedo || !gesto) return;
+    dedo.x = e.clientX;
+    dedo.y = e.clientY;
+    if (gesto.tipo === 'arrasto') {
+      camera.x = gesto.x + (e.clientX - gesto.px);
+      camera.y = gesto.y + (e.clientY - gesto.py);
+    } else {
+      const [a, b] = Array.from(dedos.values());
+      const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      const s = Math.min(8, Math.max(0.05, (gesto.s0 * dist) / gesto.d0));
+      const cx = (a.x + b.x) / 2;
+      const cy = (a.y + b.y) / 2;
+      // o ponto do mapa que estava entre os dedos continua entre os dedos
+      const mx = (gesto.cx0 - gesto.x0) / gesto.s0;
+      const my = (gesto.cy0 - gesto.y0) / gesto.s0;
+      camera.s = s;
+      camera.x = cx - mx * s;
+      camera.y = cy - my * s;
+    }
     aplicarCamera();
   });
-  const soltar = () => { arrasto = null; };
+
+  const soltar = (e) => {
+    if (dedos.delete(e.pointerId)) iniciarGesto();
+  };
   sala.addEventListener('pointerup', soltar);
   sala.addEventListener('pointercancel', soltar);
 }
+// fim de camera.js

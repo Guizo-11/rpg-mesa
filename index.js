@@ -12,6 +12,7 @@ const mapas = require('./servidor/mapas');
 const imagens = require('./servidor/imagens');
 const tokens = require('./servidor/tokens');
 const setas = require('./servidor/setas');
+const nevoa = require('./servidor/nevoa');
 const fichas = require('./servidor/fichas');
 
 const app = express();
@@ -30,6 +31,7 @@ io.on('connection', (socket) => {
   campanhas.ligar(ctx);
   mapas.ligar(ctx);
   tokens.ligar(ctx);
+  nevoa.ligar(ctx);
   setas.ligar(ctx);
   fichas.ligar(ctx);
 });

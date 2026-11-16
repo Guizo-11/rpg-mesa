@@ -1,6 +1,6 @@
 // modo PC: mapa em tela cheia, menu ☰ e janelas flutuantes que a pessoa arrasta
 
-const modoPC = window.matchMedia('(min-width: 900px)').matches;
+const modoPC = true; // mapa em tela cheia também no celular (antes: só com tela de 900px ou mais)
 const JANELAS = [];
 let zJanela = 100;
 
