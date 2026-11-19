@@ -1,9 +1,12 @@
 // câmera do mapa: roda do mouse e botões − ⌂ + dão zoom; um dedo (ou o mouse) arrasta; dois dedos dão zoom
+// 🎯 leva até o seu token
 
 const camera = { x: 0, y: 0, s: 1, ajustado: false };
 
 function aplicarCamera() {
-  $('mesa').style.transform = 'translate(' + camera.x + 'px, ' + camera.y + 'px) scale(' + camera.s + ')';
+  const mesa = $('mesa');
+  mesa.style.transform = 'translate(' + camera.x + 'px, ' + camera.y + 'px) scale(' + camera.s + ')';
+  mesa.style.setProperty('--zoom', camera.s);
 }
 
 // encaixa o mapa inteiro na tela, centralizado
@@ -34,19 +37,60 @@ function zoomCamera(fator) {
   zoomEm(fator, window.innerWidth / 2, window.innerHeight / 2);
 }
 
+// leva a câmera até um ponto do mapa (x e y de 0 a 1), chegando perto se estiver longe
+function centralizarEm(x, y) {
+  if (!modoPC) return;
+  const mesa = $('mesa');
+  const W = mesa.offsetWidth;
+  const H = mesa.offsetHeight;
+  if (!W || !H) return;
+  camera.s = Math.max(camera.s, Math.min(8, (70 * grade.colunas) / W)); // um quadrado com uns 70px
+  camera.x = window.innerWidth / 2 - x * W * camera.s;
+  camera.y = window.innerHeight / 2 - y * H * camera.s;
+  mesa.classList.add('camera-suave');
+  aplicarCamera();
+  setTimeout(() => mesa.classList.remove('camera-suave'), 400);
+}
+
+// o ponto do mapa que está no meio da tela (é onde os tokens novos aparecem)
+function centroDaVisao() {
+  const mesa = $('mesa');
+  const W = mesa.offsetWidth * camera.s;
+  const H = mesa.offsetHeight * camera.s;
+  if (!modoPC || !W || !H) return { x: 0.5, y: 0.5 };
+  const lim = (n) => Math.round(Math.min(0.97, Math.max(0.03, n)) * 10000) / 10000;
+  const sorteio = () => (Math.random() - 0.5) * (0.6 / grade.colunas); // pra não empilhar
+  return {
+    x: lim((window.innerWidth / 2 - camera.x) / W + sorteio()),
+    y: lim((window.innerHeight / 2 - camera.y) / H + (sorteio() * W) / H)
+  };
+}
+
+// 🎯: vai até o seu token e seleciona; o mestre passa por todos, um por toque
+let indiceAlvo = -1;
+function irParaMeuToken() {
+  const ids = Object.keys(tokens).filter((id) => souMestre || tokens[id].dono === euChave);
+  if (!ids.length) return;
+  indiceAlvo = (indiceAlvo + 1) % ids.length;
+  const id = ids[indiceAlvo];
+  centralizarEm(tokens[id].x, tokens[id].y);
+  if ($(id)) selecionar(id);
+}
+
 if (modoPC) {
   const sala = $('tela-sala');
 
-  // botões − ⌂ + no canto de baixo
+  // botões 🎯 − ⌂ + no canto de baixo
   const zoom = document.createElement('div');
   zoom.id = 'zoom-pc';
-  [['−', () => zoomCamera(1 / 1.25)], ['⌂', () => ajustarCamera()], ['+', () => zoomCamera(1.25)]].forEach(([texto, acao]) => {
+  [['🎯', irParaMeuToken], ['−', () => zoomCamera(1 / 1.25)], ['⌂', () => ajustarCamera()], ['+', () => zoomCamera(1.25)]].forEach(([texto, acao]) => {
     const b = document.createElement('button');
     b.className = 'sec';
     b.textContent = texto;
     b.onclick = acao;
     zoom.appendChild(b);
   });
+  zoom.firstChild.title = 'Ir até o meu token';
   zoom.addEventListener('pointerdown', (e) => e.stopPropagation());
   sala.appendChild(zoom);
 
@@ -55,7 +99,7 @@ if (modoPC) {
 
   // roda do mouse = zoom (sobre um token ela gira o token)
   sala.addEventListener('wheel', (e) => {
-    if (e.ctrlKey || e.target.closest('.janela, #menu-pc, .topo, .token')) return;
+    if (e.ctrlKey || e.target.closest('.janela, #menu-pc, .topo, .token, #menu-cond')) return;
     e.preventDefault();
     zoomEm(e.deltaY < 0 ? 1.1 : 1 / 1.1, e.clientX, e.clientY);
   }, { passive: false });
@@ -85,10 +129,10 @@ if (modoPC) {
   }
 
   sala.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.token')) return;
+    // botões e campos funcionam normal (antes o clique do mouse no menu de pingar se perdia)
+    if (e.target.closest('.token, button, input, select, textarea')) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
-    dedos.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    sala.setPointerCapture(e.pointerId);
+    dedos.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY });
     iniciarGesto();
   });
 
@@ -97,6 +141,11 @@ if (modoPC) {
     if (!dedo || !gesto) return;
     dedo.x = e.clientX;
     dedo.y = e.clientY;
+    // só "prende" o ponteiro depois que ele andou de verdade (um clique continua sendo clique)
+    if (!dedo.preso && Math.hypot(dedo.x - dedo.x0, dedo.y - dedo.y0) > 6) {
+      try { sala.setPointerCapture(e.pointerId); } catch (err) {}
+      dedo.preso = true;
+    }
     if (gesto.tipo === 'arrasto') {
       camera.x = gesto.x + (e.clientX - gesto.px);
       camera.y = gesto.y + (e.clientY - gesto.py);

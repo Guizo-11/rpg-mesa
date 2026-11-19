@@ -73,14 +73,14 @@ function ligar({ io, socket, ouvir }) {
   });
 
   // ping: só aparece e some, nada fica guardado
-  ouvir('ping', ({ x, y, cor }) => {
+  ouvir('ping', ({ x, y, cor, puxar }) => {
     const codigo = socket.data.sala;
     if (!salas.lista[codigo]) return;
     const agora = Date.now();
     if (agora - (socket.data.ultimoPing || 0) < 400) return;
     socket.data.ultimoPing = agora;
     io.to(codigo).emit('ping', {
-      x: num(x), y: num(y), dono: socket.data.usuario, cor: corValida(cor)
+        x: num(x), y: num(y), dono: socket.data.usuario, cor: corValida(cor), puxar: !!puxar && salas.lista[codigo].mestre === socket.data.usuario
     });
   });
 

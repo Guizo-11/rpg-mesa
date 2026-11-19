@@ -119,3 +119,24 @@
   }
   #painel-nevoa { bottom: 130px; }
 }
+/* extras: token escondido, condições, distância ao arrastar, painel do mestre */
+.token.oculto { opacity: 0.45; border-style: dashed; }
+.token .conds { position: absolute; right: 100%; top: 0; height: 100%; margin-right: 3px; display: flex; flex-direction: column; flex-wrap: wrap-reverse; align-content: flex-start; gap: 1px; pointer-events: none; }
+.token .conds i { font-style: normal; font-size: max(10px, calc(var(--p, 8) * 0.26cqw)); line-height: 1.15; filter: drop-shadow(0 0 2px #000); }
+.token .alca-cond { position: absolute; top: 50%; right: -42px; width: 26px; height: 26px; margin-top: -13px; background: var(--ouro); border: 2px solid #1c1c24; border-radius: 6px; box-sizing: border-box; font-size: 14px; line-height: 22px; text-align: center; cursor: pointer; pointer-events: auto; user-select: none; }
+.token .medida { position: absolute; left: 50%; bottom: 100%; z-index: 5; transform: translateX(-50%); margin-bottom: 50px; padding: 0.2em 0.6em; background: rgba(15, 14, 24, 0.9); border: 1px solid var(--ouro); border-radius: 0.5em; font-size: calc(15px / var(--zoom, 1)); font-weight: bold; color: #fff; white-space: nowrap; pointer-events: none; }
+#menu-cond { position: fixed; left: 50%; bottom: 112px; transform: translateX(-50%); z-index: 2000; width: max-content; max-width: 94vw; padding: 8px; background: rgba(36, 34, 58, 0.97); border: 1px solid var(--borda); border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55); }
+.cond-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; font-size: 14px; color: var(--ouro); }
+.cond-cab button { width: 30px; height: 30px; margin: 0; padding: 0; font-size: 18px; background: transparent; box-shadow: none; }
+.cond-lista { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; }
+#menu-cond .cond-lista button { width: auto; margin: 0; padding: 8px 10px; font-size: 13px; font-weight: normal; text-align: left; }
+#menu-cond button.ativa, .token-extra button.ativa { background: linear-gradient(135deg, #ffd166, #f4a261); color: #1c1c24; border-color: transparent; }
+#menu-cond .cond-limpar { margin: 8px 0 0; padding: 8px; font-size: 13px; }
+.token-extra input { padding: 10px; }
+.token-extra button { margin: 4px 0; padding: 10px; font-size: 14px; }
+#tela-sala.pc #mesa.camera-suave { transition: transform 0.35s ease; }
+@media (max-width: 899px) {
+  #menu-cond { bottom: 130px; padding: 6px; }
+  #menu-cond .cond-lista button { padding: 7px 5px; font-size: 12px; }
+}
+/* fim de mesa.css */

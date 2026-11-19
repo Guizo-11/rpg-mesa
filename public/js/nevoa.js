@@ -77,7 +77,8 @@ function enviarPincel() {
 
 mesaEl.addEventListener('pointerdown', (e) => {
   if (!nevoaPronta()) return;
-  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  return souMestre && ferramenta === 'nevoa';
+  if (!nevoa.ativa) { nevoa.ativa = true; socket.emit('nevoa-ativar', { ativa: true }); } // pintou com ela desligada: liga sozinha
   const p = pontoNoMapa(e);
   pincelNevoa = { m: modoNevoa, r: tamanhoNevoa / 200, pontos: [[p.x, p.y]] };
   redesenharNevoa();

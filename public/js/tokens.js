@@ -35,7 +35,7 @@ function mostrarTokensSalvos(lista) {
     const colocar = document.createElement('button');
     colocar.className = 'mini';
     colocar.textContent = 'Colocar';
-    colocar.onclick = () => socket.emit('colocar-token', { id: t.id });
+    colocar.onclick = () => socket.emit('colocar-token', { id: t.id, ...centroDaVisao() });
 
     const apagarBtn = document.createElement('button');
     apagarBtn.className = 'mini sec';
@@ -62,7 +62,7 @@ function criarToken() {
     socket.emit('criar-token', {
       nome: campo.value.trim() || 'Token',
       cor: $('cor-token').value,
-      imagem: url
+      imagem: url, ...centroDaVisao()
     }, (r) => {
       if (r.ok) mostrarTokensSalvos(r.tokens);
     });
