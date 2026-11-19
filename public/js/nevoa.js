@@ -65,7 +65,7 @@ new ResizeObserver(redesenharNevoa).observe(mesaEl);
 
 // ---------- pincel do mestre ----------
 function nevoaPronta() {
-  return souMestre && ferramenta === 'nevoa' && nevoa.ativa;
+   return souMestre && ferramenta === 'nevoa';
 }
 
 function enviarPincel() {
@@ -77,7 +77,7 @@ function enviarPincel() {
 
 mesaEl.addEventListener('pointerdown', (e) => {
   if (!nevoaPronta()) return;
-  return souMestre && ferramenta === 'nevoa';
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
   if (!nevoa.ativa) { nevoa.ativa = true; socket.emit('nevoa-ativar', { ativa: true }); } // pintou com ela desligada: liga sozinha
   const p = pontoNoMapa(e);
   pincelNevoa = { m: modoNevoa, r: tamanhoNevoa / 200, pontos: [[p.x, p.y]] };
